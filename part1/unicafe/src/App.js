@@ -1,15 +1,45 @@
 import React, { useState } from "react";
 
-const Display = ({ value, text }) => {
+const StatisticLine = ({ value, text }) => {
   return (
-    <p>
-      {text} {value}
-    </p>
+    <tr>
+      <td>{text}</td>
+      <td>{value}</td>
+    </tr>
   );
 };
 
 const Button = ({ text, onClick }) => {
   return <button onClick={onClick}>{text}</button>;
+};
+
+const Statistics = (props) => {
+  if (props.total === 0) {
+    return (
+      <>
+        <h1>statistics</h1>
+        <p>No feedback given </p>
+      </>
+    );
+  }
+  return (
+    <>
+      <h1>statistics</h1>
+      <table>
+        <tbody>
+          <StatisticLine value={props.good} text="good" />
+          <StatisticLine value={props.neutral} text="neutral" />
+          <StatisticLine value={props.bad} text="bad" />
+          <StatisticLine value={props.total} text="all" />
+          <StatisticLine value={props.score / props.total} text="average" />
+          <StatisticLine
+            value={(props.positive / props.total) * 100 + "%"}
+            text="positive"
+          />
+        </tbody>
+      </table>
+    </>
+  );
 };
 
 const App = () => {
@@ -47,18 +77,13 @@ const App = () => {
       <Button text="neutral" onClick={handleNeutral} />
       <Button text="bad" onClick={handleBad} />
 
-      <h1>statistics</h1>
-      <Display text="good" value={good} />
-      <Display text="neutral" value={neutral} />
-      <Display text="bad" value={bad} />
-      <Display text="all" value={total} />
-      <Display
-        text="average"
-        value={isNaN(score / total) ? "N/A" : score / total}
-      />
-      <Display
-        text="positive"
-        value={isNaN(positive / total) ? "N/A" : `${(positive / total) * 100}%`}
+      <Statistics
+        good={good}
+        bad={bad}
+        neutral={neutral}
+        score={score}
+        total={total}
+        positive={positive}
       />
     </div>
   );
