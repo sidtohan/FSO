@@ -1,10 +1,32 @@
 import React, { useState } from "react";
 
-const Display = ({ anecdote, votes }) => {
+const AnecdoteOfTheDay = ({ anecdote, votes }) => {
   return (
-    <div>
+    <div className="of-the-day">
+      <h1>Anecdote of the day</h1>
       <p>{anecdote}</p>
       <p>has {votes} votes.</p>
+    </div>
+  );
+};
+
+const MaxAnecdote = ({ votes, anecdotes }) => {
+  let maxVoteAnecdote = Object.keys(votes).reduce((a, b) =>
+    votes[a] > votes[b] ? a : b
+  );
+  let testVote = Object.values(votes).reduce((a, b) => Math.max(a, b));
+  if (testVote === 0) {
+    return (
+      <div className="max-votes">
+        <h1>Anecdote with most votes</h1>
+        <p>No Data Yet</p>
+      </div>
+    );
+  }
+  return (
+    <div className="max-votes">
+      <h1>Anecdote with most votes</h1>
+      <p>{anecdotes[maxVoteAnecdote]}</p>
     </div>
   );
 };
@@ -39,9 +61,13 @@ const App = () => {
   };
   return (
     <div>
-      <Display anecdote={anecdotes[selected]} votes={votes[selected]} />
+      <AnecdoteOfTheDay
+        anecdote={anecdotes[selected]}
+        votes={votes[selected]}
+      />
       <Button onClick={voteSelected} text="vote" />
       <Button onClick={updateSelected} text="next ancedote" />
+      <MaxAnecdote votes={votes} anecdotes={anecdotes} />
     </div>
   );
 };
