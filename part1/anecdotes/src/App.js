@@ -29,6 +29,7 @@ const MaxAnecdote = ({ votes, anecdotes }) => {
     <div className="max-votes">
       <h1>Anecdote with most votes</h1>
       <p>{anecdotes[maxVoteAnecdote]}</p>
+      <p>has {testVote} votes.</p>
     </div>
   );
 };
