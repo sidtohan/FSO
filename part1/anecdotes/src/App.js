@@ -11,10 +11,12 @@ const AnecdoteOfTheDay = ({ anecdote, votes }) => {
 };
 
 const MaxAnecdote = ({ votes, anecdotes }) => {
+  // took reference from the internet here
+  // using the reduce method
   let maxVoteAnecdote = Object.keys(votes).reduce((a, b) =>
     votes[a] > votes[b] ? a : b
   );
-  let testVote = Object.values(votes).reduce((a, b) => Math.max(a, b));
+  let testVote = Math.max(...Object.values(votes));
   if (testVote === 0) {
     return (
       <div className="max-votes">
