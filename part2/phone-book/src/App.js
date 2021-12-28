@@ -81,11 +81,12 @@ const App = () => {
       alert(`${newName} is already added to phonebook`);
       return;
     }
-    // reseting value of filter when new is added,
-    // otherwise becomes difficult to implement
     setPersons(newPersons);
-    setFilterName("");
-    setDisplayPersons(newPersons);
+    setDisplayPersons(
+      newPersons.filter((person) =>
+        person.name.toLowerCase().includes(filterName)
+      )
+    );
     setNewName("");
     setNewPhone("");
   };
