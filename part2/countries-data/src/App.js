@@ -9,9 +9,9 @@ const Search = ({ searchCountry, onChange }) => {
   );
 };
 
-const Country = ({ country }) => {
+const Country = ({ country, setActiveDetail, idx, activeDetail }) => {
   const showMore = (e) => {
-    console.log(e.target.value);
+    setActiveDetail(activeDetail.map((detail, i) => (i == idx ? 1 : detail)));
   };
   return (
     <li>
@@ -19,7 +19,6 @@ const Country = ({ country }) => {
       <button onClick={showMore} value={country.name.common}>
         show more
       </button>
-      <div id={country.name.common}></div>
     </li>
   );
 };
@@ -43,7 +42,12 @@ const CountryDetail = ({ country }) => {
   );
 };
 
-const Display = ({ displayCountries, searchCountry }) => {
+const Display = ({
+  displayCountries,
+  searchCountry,
+  activeDetail,
+  setActiveDetail,
+}) => {
   if (searchCountry === "") {
     return <div>Please use the search bar to begin</div>;
   }
@@ -55,9 +59,20 @@ const Display = ({ displayCountries, searchCountry }) => {
   }
   return (
     <ul>
-      {displayCountries.map((country, i) => (
-        <Country key={i} country={country} />
-      ))}
+      {displayCountries.map((country, i) => {
+        if (activeDetail[i] == 1) {
+          return <CountryDetail key={i} country={country} />;
+        }
+        return (
+          <Country
+            key={i}
+            country={country}
+            idx={i}
+            setActiveDetail={setActiveDetail}
+            activeDetail={activeDetail}
+          />
+        );
+      })}
     </ul>
   );
 };
@@ -68,16 +83,26 @@ const App = () => {
   const displayCountries = countries.filter((country) =>
     country.name.common.toLowerCase().includes(searchCountry.toLowerCase())
   );
-
+  const [activeDetail, setActiveDetail] = useState([]);
   const findCountries = (e) => {
     setSearchCountry(e.target.value);
+
+    // setting the new filtered countries
+    const helper = countries.filter((country) =>
+      country.name.common.toLowerCase().includes(e.target.value.toLowerCase())
+    );
+    if (helper.length < 10) {
+      const temp = [];
+      for (let i = 0; i < helper.length; i++) {
+        temp.push(0);
+      }
+      setActiveDetail(temp);
+    }
   };
 
   useEffect(() => {
-    console.log("begin....");
     axios.get("https://restcountries.com/v3.1/all").then((response) => {
       setCountries(response.data);
-      console.log(response.data);
     });
   }, []);
 
@@ -87,6 +112,8 @@ const App = () => {
       <Display
         displayCountries={displayCountries}
         searchCountry={searchCountry}
+        activeDetail={activeDetail}
+        setActiveDetail={setActiveDetail}
       />
     </div>
   );
