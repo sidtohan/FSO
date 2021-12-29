@@ -1,5 +1,5 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
+import phoneService from "./services/phone";
 
 const Filter = ({ filterName, onChange }) => {
   return (
@@ -28,25 +28,44 @@ const PersonForm = (props) => {
 
 const PersonDetails = ({ person }) => {
   return (
-    <div>
-      {person.name} {person.number}
-    </div>
+    <span>
+      {person.name} {person.number}{" "}
+    </span>
   );
 };
 
-const Persons = ({ displayPersons }) => {
+const Persons = (props) => {
+  const displayPersons = props.persons.filter((person) =>
+    person.name.toLowerCase().includes(props.filterName.toLowerCase())
+  );
+  const deletePerson = (person) => {
+    const deletedName = person.name;
+    if (window.confirm(`Delete ${deletedName}?`)) {
+      const id = person.id;
+      phoneService.remove(id).then((response) => {
+        props.setPersons(
+          props.persons.filter((person) => person.name !== deletedName)
+        );
+        console.log(`${response} delete successfully`);
+      });
+    }
+  };
   return (
     <div>
-      {displayPersons.map((person) => (
-        <PersonDetails key={person.name} person={person} />
-      ))}
+      {displayPersons.map((person) => {
+        return (
+          <div key={person.name}>
+            <PersonDetails person={person} />
+            <button onClick={() => deletePerson(person)}>delete</button>
+          </div>
+        );
+      })}
     </div>
   );
 };
+
 const App = () => {
   const [persons, setPersons] = useState([]);
-
-  const [displayPersons, setDisplayPersons] = useState(persons);
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [filterName, setFilterName] = useState("");
@@ -59,38 +78,46 @@ const App = () => {
   };
 
   const filterByName = (e) => {
-    const val = e.target.value.toLowerCase();
+    const val = e.target.value;
     setFilterName(val);
     // not using filterName directly in the next line
     // since it is updated when re rendered only
     // maybe causing issues because of that
-    setDisplayPersons(
-      persons.filter((person) => person.name.toLowerCase().includes(val))
-    );
   };
 
   const addNewPerson = (e) => {
     e.preventDefault();
-    const newPersons = persons.concat({ name: newName, number: newPhone });
     const check = persons.filter((person) => person.name === newName);
     if (check.length !== 0) {
-      alert(`${newName} is already added to phonebook`);
-      return;
+      if (
+        window.confirm(
+          `${newName} is already added to phonebook, replace the old number?`
+        )
+      ) {
+        phoneService
+          .update({ ...check[0], number: newPhone }, check[0].id)
+          .then((response) => {
+            const newPersons = persons.map((person) => {
+              return response.id === person.id ? response : person;
+            });
+            setPersons(newPersons);
+            setNewName("");
+            setNewPhone("");
+          });
+      }
+    } else {
+      phoneService
+        .create({ name: newName, number: newPhone })
+        .then((response) => {
+          setPersons(persons.concat(response));
+          setNewName("");
+          setNewPhone("");
+        });
     }
-    setPersons(newPersons);
-    setDisplayPersons(
-      newPersons.filter((person) =>
-        person.name.toLowerCase().includes(filterName)
-      )
-    );
-    setNewName("");
-    setNewPhone("");
   };
-
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then((response) => {
-      setPersons(response.data);
-      setDisplayPersons(response.data);
+    phoneService.getAll().then((response) => {
+      setPersons(response);
     });
   }, []);
   return (
@@ -106,7 +133,11 @@ const App = () => {
         phoneInputHandler={phoneInputHandler}
       />
       <h2>Numbers</h2>
-      <Persons displayPersons={displayPersons} />
+      <Persons
+        persons={persons}
+        setPersons={setPersons}
+        filterName={filterName}
+      />
     </div>
   );
 };
