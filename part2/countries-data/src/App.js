@@ -1,6 +1,41 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 
+const api_key = process.env.REACT_APP_API_KEY;
+const apiLink = "https://api.openweathermap.org/data/2.5/weather?";
+
+const Weather = ({ city }) => {
+  city = city[0];
+  const [weather, setWeather] = useState({});
+  useEffect(() => {
+    axios
+      .get(apiLink, {
+        params: {
+          q: city,
+          appid: api_key,
+        },
+      })
+      .then((response) => {
+        setWeather({
+          temp: Math.round(response.data.main.temp - 273),
+          wind: response.data.wind.speed,
+          icon: response.data.weather.icon,
+        });
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
+    <div className="weather-display">
+      <h2>Weather in {city}</h2>
+      <div>
+        <strong>temperature</strong>: {weather.temp} celsius
+      </div>
+      <div>
+        <strong>wind</strong>: {weather.wind} mph
+      </div>
+    </div>
+  );
+};
 const Search = ({ searchCountry, onChange }) => {
   return (
     <form>
@@ -11,7 +46,7 @@ const Search = ({ searchCountry, onChange }) => {
 
 const Country = ({ country, setActiveDetail, idx, activeDetail }) => {
   const showMore = (e) => {
-    setActiveDetail(activeDetail.map((detail, i) => (i == idx ? 1 : detail)));
+    setActiveDetail(activeDetail.map((detail, i) => (i === idx ? 1 : detail)));
   };
   return (
     <li>
@@ -38,6 +73,7 @@ const CountryDetail = ({ country }) => {
         ))}
       </ul>
       <img src={country.flags.png} alt="Flag" />
+      <Weather city={country.capital} />
     </div>
   );
 };
@@ -54,13 +90,13 @@ const Display = ({
   if (displayCountries.length > 10) {
     return <div>Too many matches, specify another filter</div>;
   }
-  if (displayCountries.length == 1) {
+  if (displayCountries.length === 1) {
     return <CountryDetail country={displayCountries[0]} />;
   }
   return (
     <ul>
       {displayCountries.map((country, i) => {
-        if (activeDetail[i] == 1) {
+        if (activeDetail[i] === 1) {
           return <CountryDetail key={i} country={country} />;
         }
         return (
