@@ -2,8 +2,8 @@ POST http://localhost:3001/api/blogs
 Content-Type: application/json
 
 {
-  "author" : "JS Bowling",
-  "title": "Why Parry Hotter is the best",
-  "url": "https://fakeblogsite.com/js-1",
-  "upvotes": 3
+  "author" : "Howla",
+  "title": "Why Parry Hotter is the worst",
+  "url": "https://fakeblogsite.com/js-2",
+  "upvotes": 0
 }
