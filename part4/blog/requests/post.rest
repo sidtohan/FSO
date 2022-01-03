@@ -5,5 +5,5 @@ Content-Type: application/json
   "author" : "Howla",
   "title": "Why Parry Hotter is the worst",
   "url": "https://fakeblogsite.com/js-2",
-  "upvotes": 0
+  "likes": 0
 }

@@ -14,5 +14,6 @@ module.exports = {
     quotes: ["error", "double"],
     semi: ["error", "always"],
     "no-undef": 0,
+    "no-unused-vars": 0,
   },
 };
