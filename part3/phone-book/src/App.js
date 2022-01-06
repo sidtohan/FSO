@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from "react";
 import phoneService from "./services/phone";
+import Notification from "./Notification";
 
-const Notification = ({ message, notifType }) => {
-  if (message === null) {
-    return null;
-  }
-  if (notifType === "suc") {
-    return <div className="notification">{message}</div>;
-  } else {
-    return <div className="error">{message}</div>;
-  }
-};
 const Filter = ({ filterName, onChange }) => {
   return (
     <form>
@@ -115,11 +106,12 @@ const App = () => {
             setPersons(newPersons);
             setNewName("");
             setNewPhone("");
+            setNotifType("suc");
             setMessage(`${response.name} has been updated.`);
-            setTimeout(() => setMessage(null), 2500);
+            setTimeout(() => setMessage(null), 3500);
           })
           .catch((err) => {
-            setMessage(`${newName} was removed from the server`);
+            setMessage(err.response.data.error);
             setNotifType("err");
             setTimeout(() => setMessage(null), 2700);
           });
@@ -131,8 +123,16 @@ const App = () => {
           setPersons(persons.concat(response));
           setNewName("");
           setNewPhone("");
+          setNotifType("suc");
           setMessage(`${response.name} was added successfully`);
-          setTimeout(() => setMessage(null), 2500);
+          setTimeout(() => {
+            setMessage(null);
+          }, 2500);
+        })
+        .catch((err) => {
+          setMessage(err.response.data.error);
+          setNotifType("err");
+          setTimeout(() => setMessage(null), 3500);
         });
     }
   };
