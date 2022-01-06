@@ -1,0 +1,9 @@
+PUT http://localhost:3001/api/blogs/61d3065c6742a5b36a1c0a30
+Content-Type: application/json
+
+{
+  "author" : "Palo",
+  "title": "Why Parry Hotter is the best",
+  "url": "https://fakeblogsite.com/js-2",
+  "likes": 0
+}
