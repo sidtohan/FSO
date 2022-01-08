@@ -1,38 +1,95 @@
 const express = require("express");
 const blogRouter = express.Router();
 const Blog = require("../models/blog");
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+
+const getUser = async (request, response, next) => {
+  const decodedToken = jwt.verify(request.token, process.env.SECRET);
+
+  if (!decodedToken.id) {
+    request.user = null;
+  } else {
+    const user = await User.findById(decodedToken.id);
+    request.user = user;
+  }
+  next();
+};
 
 blogRouter.get("/", async (request, response) => {
-  const blogs = await Blog.find({});
+  const blogs = await Blog.find({}).populate("user", {
+    username: 1,
+    name: 1,
+    id: 1,
+  });
   response.json(blogs);
 });
 
-blogRouter.post("/", async (request, response) => {
+blogRouter.post("/", getUser, async (request, response) => {
   const body = request.body;
+
+  const user = request.user;
+  if (!user.id) {
+    return response.status(401).json({ error: "token missing or invalid" });
+  }
+
   if (!body.title || !body.url) return response.status(400).end();
   if (!body.likes) body.likes = 0;
-  const blog = new Blog(body);
+
+  const newBlog = {
+    title: body.title,
+    author: user.username,
+    url: body.url,
+    likes: body.likes,
+    user: user.id,
+  };
+
+  const blog = new Blog(newBlog);
   const result = await blog.save();
+
+  user.blogs = user.blogs.concat(result.id);
+  await user.save();
+
   response.status(201).json(result);
 });
 
-blogRouter.delete("/:id", async (request, response) => {
+blogRouter.delete("/:id", getUser, async (request, response) => {
   const id = request.params.id;
-  await Blog.findByIdAndRemove(id);
+
+  const blogToBeRemoved = await Blog.findById(id);
+
+  if (!blogToBeRemoved) {
+    return response.status(400).json({ error: "blog doesn't exist" });
+  }
+  const user = request.user;
+  if (!user) {
+    return response.status(401).json({ error: "missing or invalid token" });
+  }
+  if (blogToBeRemoved.user.toString() != user._id.toString()) {
+    return response
+      .status(401)
+      .json({ error: "cannot remove a blog created by another user" });
+  }
+
+  await blogToBeRemoved.delete();
+  user.blogs = user.blogs.filter(
+    (blog) => blog.id.toString() !== user.id.toString()
+  );
   response.status(204).end();
 });
 
-blogRouter.put("/:id", async (request, response) => {
+blogRouter.put("/:id", getUser, async (request, response) => {
   const id = request.params.id;
   const newLikes = request.body.likes;
   const newTitle = request.body.title;
-  const newAuthor = request.body.author;
+  const newAuthor = request.user.username;
   const newUrl = request.body.url;
 
   const toBeChanged = {
     likes: newLikes,
     title: newTitle,
     author: newAuthor,
+    user: request.user.id,
     url: newUrl,
   };
   const updatedBlog = await Blog.findByIdAndUpdate(id, toBeChanged, {

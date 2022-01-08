@@ -1,10 +1,15 @@
 const mongoose = require("mongoose");
 const Blog = require("../models/blog");
+const User = require("../models/user");
+
 const app = require("../app");
 const supertest = require("supertest");
 const helper = require("../utils/api_helper");
 
 const api = supertest(app);
+
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 beforeEach(async () => {
   await Blog.deleteMany({});
@@ -16,7 +21,7 @@ beforeEach(async () => {
 
 describe("blogs returned", () => {
   test("in json", async () => {
-    const blogs = await api
+    await api
       .get("/api/blogs")
       .expect(200)
       .expect("Content-Type", /application\/json/);
@@ -35,18 +40,38 @@ test("id exists", async () => {
 });
 
 describe("posting blogs", () => {
+  let token;
+  beforeEach(async () => {
+    await User.deleteMany({});
+    const passwordHash = await bcrypt.hash("topsecret", 10);
+    const newUser = new User({
+      username: "mr.admin",
+      name: "xxx",
+      passwordHash,
+      blogs: [],
+    });
+    const finalUser = await newUser.save();
+    const toBeSigned = {
+      username: finalUser.username,
+      id: finalUser._id,
+    };
+    token = jwt.sign(toBeSigned, process.env.SECRET);
+  });
+
   test("posting a blog works", async () => {
     const newBlog = {
       title: "pablo picasso is alive",
-      author: "garry",
       url: "404notfound.com",
       likes: 69,
     };
+
     await api
       .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
+
     const updatedBlogs = await helper.blogsInDb();
     expect(updatedBlogs.length).toBe(helper.initialBlogs.length + 1);
   }, 10000);
@@ -57,7 +82,11 @@ describe("posting blogs", () => {
       author: "nanny",
       url: "why.com",
     };
-    const response = await api.post("/api/blogs").send(newBlog).expect(201);
+    const response = await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(201);
     expect(response.body.likes).toBe(0);
   });
 
@@ -65,33 +94,112 @@ describe("posting blogs", () => {
     const newBlog = {
       likes: 499,
     };
-    await api.post("/api/blogs").send(newBlog).expect(400);
+    await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(400);
+  });
+  test("no token = no saving :D", async () => {
+    const newBlog = {
+      title: "pablo picasso is ded",
+      author: "nanny",
+      url: "why.com",
+    };
+    await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .set("Authorization", "Bearer xxxillegalguy")
+      .expect(401);
   });
 });
 
 describe("deleting blogs work", () => {
+  let blogid;
+  let token;
+  beforeEach(async () => {
+    await User.deleteMany({});
+    await Blog.deleteMany({});
+    const passwordHash = await bcrypt.hash("topsecret", 10);
+    const newUser = new User({
+      username: "mr.admin",
+      name: "xxx",
+      passwordHash,
+      blogs: [],
+    });
+    const savedUser = await newUser.save();
+    const toBeSigned = {
+      username: savedUser.username,
+      id: savedUser._id,
+    };
+    token = jwt.sign(toBeSigned, process.env.SECRET);
+
+    const newBlog = new Blog({
+      ...helper.initialBlogs[0],
+      user: savedUser._id,
+    });
+    const savedBlog = await newBlog.save();
+    blogid = savedBlog._id.toString();
+  });
+
   test("if id is valid and returns 204", async () => {
-    const id = helper.initialBlogs[0]._id;
-    await api.delete(`/api/blogs/${id}`).expect(204);
+    const result = await api
+      .delete(`/api/blogs/${blogid}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(204);
     const updatedBlogs = await helper.blogsInDb();
-    expect(updatedBlogs.length).toBe(helper.initialBlogs.length - 1);
+    expect(updatedBlogs.length).toBe(0);
   });
 });
 
 describe("updating content of blog", () => {
+  let token;
+  let blogid;
+  let userid;
+  beforeEach(async () => {
+    await User.deleteMany({});
+    await Blog.deleteMany({});
+    const passwordHash = await bcrypt.hash("topsecret", 10);
+    const newUser = new User({
+      username: "mr.admin",
+      name: "xxx",
+      passwordHash,
+      blogs: [],
+    });
+    const savedUser = await newUser.save();
+    const toBeSigned = {
+      username: savedUser.username,
+      id: savedUser._id,
+    };
+    userid = savedUser._id.toString();
+    token = jwt.sign(toBeSigned, process.env.SECRET);
+
+    const newBlog = new Blog({
+      ...helper.initialBlogs[0],
+      user: savedUser._id,
+    });
+    const savedBlog = await newBlog.save();
+    blogid = savedBlog._id.toString();
+  });
+
   test("changing everything using valid id", async () => {
-    const id = helper.initialBlogs[0]._id;
     const newBlog = {
-      title: "gonna get deleted",
+      title: "gonna get changed",
       url: "goog.co",
-      author: "popy",
       likes: 14,
     };
     const updatedBlog = await api
-      .put(`/api/blogs/${id}`)
+      .put(`/api/blogs/${blogid}`)
+      .set("Authorization", `Bearer ${token}`)
       .send(newBlog)
       .expect(200);
-    expect(updatedBlog.body).toEqual({ ...newBlog, id });
+
+    expect(updatedBlog.body).toEqual({
+      ...newBlog,
+      author: "mr.admin",
+      id: blogid,
+      user: userid,
+    });
   });
 });
 afterAll(() => {
