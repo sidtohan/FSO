@@ -11,7 +11,7 @@ loginRouter.post("/", async (request, response) => {
   const user = await User.findOne({ username: body.username });
   const decision = await bcrypt.compare(body.password, user.passwordHash);
 
-  if (!decision) return response.json(400).json({ error: "invalid password" });
+  if (!decision) return response.status(401).json({ error: "invalid password" });
 
   const objForSigning = {
     username: body.username,
