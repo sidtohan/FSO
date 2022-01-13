@@ -85,7 +85,12 @@ const App = () => {
       ) : (
         <>
           <Notification message={message} notifType={notifType} />
-          <Blogs blogs={blogs} user={user} onClick={handleLogout} />
+          <Blogs
+            blogs={blogs}
+            setBlogs={setBlogs}
+            user={user}
+            onClick={handleLogout}
+          />
           <Togglable ref={blogFormRef}>
             <CreateNew createBlog={handleNew} />
           </Togglable>

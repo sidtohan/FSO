@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import blogService from "../services/blogs";
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, setBlogs, blogList }) => {
   const [viewDetails, setViewDetails] = useState(false);
-  const [likes, setLikes] = useState(blog.likes);
 
+  const checkUser = () => {
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    return loggedInUser.username === blog.user.username;
+  };
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -12,20 +15,30 @@ const Blog = ({ blog }) => {
     borderWidth: 1,
     marginBottom: 5,
   };
+
+  const deleteBlog = async () => {
+    if (!window.confirm(`Remove blog ${blog.title} by ${blog.author}?`)) return;
+    try {
+      await blogService.deleteBlog(blog.id);
+      setBlogs(blogList.filter((bl) => bl.id !== blog.id));
+    } catch (error) {
+      console.log(error.response.data);
+    }
+  };
   const toggleDetails = () => {
     setViewDetails(!viewDetails);
   };
   const updateLikes = async () => {
     try {
-      await blogService.update({
+      const updatedBlog = await blogService.update({
         author: blog.author,
-        likes: likes + 1,
+        likes: blog.likes + 1,
         title: blog.title,
         url: blog.url,
         id: blog.id,
         user: blog.user,
       });
-      setLikes(likes + 1);
+      setBlogs(blogList.map((bl) => (bl.id === blog.id ? updatedBlog : bl)));
     } catch (error) {
       console.log(error.response.data);
     }
@@ -43,9 +56,12 @@ const Blog = ({ blog }) => {
           <button onClick={toggleDetails}>hide</button>
           <br></br>
           {blog.url} <br />
-          likes: {likes} <button onClick={updateLikes}>like</button> <br />
+          likes: {blog.likes} <button onClick={updateLikes}>like</button> <br />
           {blog.user.username}
           <br />
+          {checkUser() === true ? (
+            <button onClick={deleteBlog}>remove</button>
+          ) : null}
         </div>
       )}
     </>
