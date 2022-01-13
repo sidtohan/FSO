@@ -1,5 +1,6 @@
 import axios from "axios";
 const baseUrl = "/api/blogs";
+
 let token;
 
 const setToken = (newToken) => {
@@ -21,4 +22,24 @@ const create = async ({ author, title, url }) => {
   return response.data;
 };
 
-export default { getAll, setToken, create };
+const update = async ({ author, title, url, likes, id, user }) => {
+  const config = {
+    headers: {
+      Authorization: token,
+    },
+  };
+  const response = await axios.put(
+    `${baseUrl}/${id}`,
+    { author, title, url, likes, user: user.id },
+    config
+  );
+  return response.data;
+};
+
+const functions = {
+  getAll,
+  setToken,
+  create,
+  update,
+};
+export default functions;

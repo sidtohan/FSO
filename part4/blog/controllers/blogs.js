@@ -6,7 +6,6 @@ const User = require("../models/user");
 
 const getUser = async (request, response, next) => {
   const decodedToken = jwt.verify(request.token, process.env.SECRET);
-
   if (!decodedToken.id) {
     request.user = null;
   } else {
@@ -86,18 +85,21 @@ blogRouter.put("/:id", getUser, async (request, response) => {
   const newTitle = request.body.title;
   const newAuthor = request.user.username;
   const newUrl = request.body.url;
+  const user = request.body.user;
 
   const toBeChanged = {
     likes: newLikes,
     title: newTitle,
     author: newAuthor,
-    user: request.user.id,
+    user,
     url: newUrl,
   };
   const updatedBlog = await Blog.findByIdAndUpdate(id, toBeChanged, {
     new: true,
   });
   // not returning 204 here to ensure i can get the updated blog
+  const blogUser = await User.findById(user);
+  updatedBlog.user = blogUser;
   response.json(updatedBlog);
 });
 module.exports = blogRouter;

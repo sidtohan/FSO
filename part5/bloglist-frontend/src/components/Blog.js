@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import blogService from "../services/blogs";
 
 const Blog = ({ blog }) => {
   const [viewDetails, setViewDetails] = useState(false);
+  const [likes, setLikes] = useState(blog.likes);
+
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -11,6 +14,21 @@ const Blog = ({ blog }) => {
   };
   const toggleDetails = () => {
     setViewDetails(!viewDetails);
+  };
+  const updateLikes = async () => {
+    try {
+      await blogService.update({
+        author: blog.author,
+        likes: likes + 1,
+        title: blog.title,
+        url: blog.url,
+        id: blog.id,
+        user: blog.user,
+      });
+      setLikes(likes + 1);
+    } catch (error) {
+      console.log(error.response.data);
+    }
   };
   return (
     <>
@@ -25,7 +43,7 @@ const Blog = ({ blog }) => {
           <button onClick={toggleDetails}>hide</button>
           <br></br>
           {blog.url} <br />
-          likes: {blog.likes} <button>like</button> <br />
+          likes: {likes} <button onClick={updateLikes}>like</button> <br />
           {blog.user.username}
           <br />
         </div>
