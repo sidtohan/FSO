@@ -33,7 +33,8 @@ blogRouter.post("/", getUser, async (request, response) => {
     return response.status(401).json({ error: "token missing or invalid" });
   }
 
-  if (!body.title || !body.url) return response.status(400).end();
+  if (!body.title || !body.url)
+    return response.status(400).send({ error: "missing url or title" });
   if (!body.likes) body.likes = 0;
 
   const newBlog = {
@@ -50,6 +51,7 @@ blogRouter.post("/", getUser, async (request, response) => {
   user.blogs = user.blogs.concat(result.id);
   await user.save();
 
+  result.user = user;
   response.status(201).json(result);
 });
 
