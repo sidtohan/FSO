@@ -187,6 +187,7 @@ describe("updating content of blog", () => {
       title: "gonna get changed",
       url: "goog.co",
       likes: 14,
+      user: userid,
     };
     const updatedBlog = await api
       .put(`/api/blogs/${blogid}`)
@@ -198,7 +199,12 @@ describe("updating content of blog", () => {
       ...newBlog,
       author: "mr.admin",
       id: blogid,
-      user: userid,
+      user: {
+        blogs: [],
+        id: userid,
+        name: "xxx",
+        username: "mr.admin",
+      },
     });
   });
 });
