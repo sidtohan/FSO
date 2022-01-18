@@ -3,7 +3,7 @@ const Togglable = React.forwardRef((props, ref) => {
   const [visible, setVisible] = useState(false);
   const showWhenVisible = { display: visible === true ? "block" : "none" };
   const hideWhenVisible = { display: visible === true ? "none" : "block" };
-  
+
   const toggleVisibility = () => setVisible(!visible);
   useImperativeHandle(ref, () => {
     return {
@@ -24,4 +24,5 @@ const Togglable = React.forwardRef((props, ref) => {
   );
 });
 
+Togglable.displayName = "Togglable";
 export default Togglable;

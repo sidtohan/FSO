@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import blogService from "../services/blogs";
 
-const Blog = ({ blog, setBlogs, blogList }) => {
+const Blog = ({ blog, setBlogs, blogList, updateLikes }) => {
   const [viewDetails, setViewDetails] = useState(false);
 
   const checkUser = () => {
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!loggedInUser) return false;
     return loggedInUser.username === blog.user.username;
   };
   const blogStyle = {
@@ -28,37 +29,26 @@ const Blog = ({ blog, setBlogs, blogList }) => {
   const toggleDetails = () => {
     setViewDetails(!viewDetails);
   };
-  const updateLikes = async () => {
-    try {
-      const updatedBlog = await blogService.update({
-        author: blog.author,
-        likes: blog.likes + 1,
-        title: blog.title,
-        url: blog.url,
-        id: blog.id,
-        user: blog.user,
-      });
-      setBlogs(blogList.map((bl) => (bl.id === blog.id ? updatedBlog : bl)));
-    } catch (error) {
-      console.log(error.response.data);
-    }
-  };
   return (
     <>
       {viewDetails === false ? (
-        <div style={blogStyle}>
-          {blog.title} : {blog.author}{" "}
+        <div style={blogStyle} className="blog">
+          <span className="blog-title">{blog.title} </span> :{" "}
+          <span className="blog-author"> {blog.author}</span>
           <button onClick={toggleDetails}>view</button>
         </div>
       ) : (
-        <div style={blogStyle}>
-          {blog.title} : {blog.author}{" "}
+        <div style={blogStyle} className="blog">
+          <span className="blog-title">{blog.title} </span> :{" "}
+          <span className="blog-author"> {blog.author}</span>
           <button onClick={toggleDetails}>hide</button>
           <br></br>
-          {blog.url} <br />
-          likes: {blog.likes} <button onClick={updateLikes}>like</button> <br />
-          {blog.user.username}
-          <br />
+          <p className="blog-url">{blog.url}</p>
+          <p className="blog-likes">
+            likes: {blog.likes} <button onClick={updateLikes}>like</button>{" "}
+            <br />
+          </p>
+          <p className="blog-username">{blog.user.username}</p>
           {checkUser() === true ? (
             <button onClick={deleteBlog}>remove</button>
           ) : null}

@@ -4,6 +4,7 @@ module.exports = {
     browser: true,
     es6: true,
     "jest/globals": true,
+    "cypress/globals": true,
   },
   extends: ["eslint:recommended", "plugin:react/recommended"],
   parserOptions: {
@@ -13,19 +14,20 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: "module",
   },
-  plugins: ["react", "jest"],
+  plugins: ["react", "jest", "cypress"],
   rules: {
     indent: ["error", 2],
     "linebreak-style": ["error", "unix"],
     quotes: ["error", "double"],
     semi: ["error", "always"],
     eqeqeq: "error",
-    "no-trailing-spaces": "error",
     "object-curly-spacing": ["error", "always"],
     "arrow-spacing": ["error", { before: true, after: true }],
     "no-console": 0,
     "react/prop-types": 0,
     "no-undef": 0,
+    "no-empty": 0,
+    "no-trailing-spaces": 0,
   },
   settings: {
     react: {

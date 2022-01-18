@@ -1,0 +1,10 @@
+POST http://localhost:3001/api/blogs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlJpc2luZ0tlbHAiLCJpZCI6IjYxZDk5Mjk4ZWU5MGM3ODUxNTUyMjUxMCIsImlhdCI6MTY0MTY2MTMxNiwiZXhwIjoxNjQxNjY0OTE2fQ.mao671aAbtVlOQyIaeBDrqi952A8v7XrQ6_ynAxzLzM
+
+{
+  "title": "Parry Hills",
+  "url": "https://fakeblogsite.com/js-1",
+  "likes": 4,
+  "user": "61d99298ee90c78515522510"
+}

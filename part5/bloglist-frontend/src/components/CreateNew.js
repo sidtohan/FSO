@@ -23,6 +23,7 @@ const CreateNew = ({ createBlog }) => {
       <form onSubmit={addBlog}>
         title{" "}
         <input
+          className="title"
           type="text"
           value={title}
           onChange={({ target }) => setTitle(target.value)}
@@ -30,6 +31,7 @@ const CreateNew = ({ createBlog }) => {
         <br />
         author{" "}
         <input
+          className="author"
           type="text"
           value={author}
           onChange={({ target }) => setAuthor(target.value)}
@@ -37,6 +39,7 @@ const CreateNew = ({ createBlog }) => {
         <br />
         url{" "}
         <input
+          className="url"
           type="text"
           value={url}
           onChange={({ target }) => setUrl(target.value)}
