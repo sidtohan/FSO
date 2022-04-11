@@ -27,7 +27,14 @@ const reducer = (state = initialState, action) => {
       ...anecdoteToBeVoted,
       votes: anecdoteToBeVoted.votes + 1,
     };
-    return state.map((an) => (an.id === id ? newAnecdote : an));
+    const newList = state.map((an) => (an.id === id ? newAnecdote : an));
+    newList.sort((an1, an2) => an2.votes - an1.votes);
+    // for sorting
+    // sort function positive : an1 after an2 in ordering
+    return newList;
+  } else if (action.type === "NEW") {
+    // new anecdote made here
+    return state.concat(asObject(action.data));
   }
   return state;
 };
@@ -39,4 +46,10 @@ export const updateVote = (id) => {
   };
 };
 
+export const createNew = (anecdote) => {
+  return {
+    type: "NEW",
+    data: anecdote,
+  };
+};
 export default reducer;
